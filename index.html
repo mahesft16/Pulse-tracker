@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>pulsetracker</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- FontAwesome for Professional Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Animated Mesh Gradient Background -->
+    <div class="mesh-bg">
+        <div class="mesh-blob blob-1"></div>
+        <div class="mesh-blob blob-2"></div>
+        <div class="mesh-blob blob-3"></div>
+    </div>
+
+    <div class="screen-wrapper">
+        <div class="app-card">
+            <!-- Background Glow -->
+            <div class="bg-glow"></div>
+
+            <!-- Permissions Warning Banner -->
+            <div id="permissions-banner" class="hidden" style="position: absolute; top: 0; left: 0; right: 0; background: rgba(239, 68, 68, 0.95); backdrop-filter: blur(10px); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; z-index: 900; border-bottom: 1px solid rgba(255,255,255,0.1); border-radius: 24px 24px 0 0;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-triangle-exclamation" style="color: white; font-size: 14px;"></i>
+                    <p style="color: white; font-size: 11px; font-weight: 500; margin: 0; line-height: 1.2;">Permissions disabled. Tap to enable Location & Bluetooth.</p>
+                </div>
+                <button id="btn-banner-fix" style="background: white; color: #ef4444; border: none; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer; white-space: nowrap;">Turn On</button>
+            </div>
+
+            <!-- Header -->
+            <header class="header">
+                <div>
+                    <p class="subtitle" id="current-status-text">Ready to move? <span id="temp-display" style="margin-left: 8px; color: var(--accent-blue);"><i class="fa-solid fa-cloud-sun"></i> --°C</span></p>
+                    <h1 class="title text-gradient" id="user-name-header">User</h1>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <button id="btn-open-ai" class="icon-btn ai-pulse-btn" style="background: linear-gradient(135deg, #22c55e, #10b981); border: none; width: 42px; height: 42px; position: relative; box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);">
+                        <i class="fa-solid fa-robot" style="color: white; font-size: 18px;"></i>
+                        <span style="position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; border: 2px solid #1a1a2e;"></span>
+                    </button>
+                    <div id="header-profile-btn" class="avatar user-initial" style="cursor: pointer;">
+                        U
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content">
+
+                <!-- ============================== -->
+                <!-- 🏠 HOME VIEW -->
+                <!-- ============================== -->
+                <section id="view-home" class="view-section active">
+                    <!-- Activity Rings & Start Button -->
+                    <div class="rings-container">
+                        <div class="rings-wrapper">
+                            <!-- Outer Ring (Green) -->
+                            <div class="ring-bg"></div>
+                            <div class="ring ring-green"></div>
+
+                            <!-- Middle Ring (Blue) -->
+                            <div class="ring-bg ring-middle-bg"></div>
+                            <div class="ring ring-blue"></div>
+
+                            <!-- Inner Ring (Orange) -->
+                            <div class="ring-bg ring-inner-bg"></div>
+                            <div class="ring ring-orange"></div>
+
+                            <!-- Center Content -->
+                            <div class="ring-center">
+                                <p class="subtitle">Daily Goal</p>
+                                <h2 class="goal-percent">0%</h2>
+                                <button id="start-tracking-btn" class="start-btn">Start</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <p class="stat-label"><i class="fa-solid fa-fire" style="color:#f97316;"></i> Calories</p>
+                            <h3 class="stat-value" id="calorie-count">0</h3>
+                            <span class="stat-unit">kcal</span>
+                        </div>
+                        <div class="stat-box">
+                            <p class="stat-label"><i class="fa-solid fa-shoe-prints" style="color:#22c55e;"></i> Steps
+                            </p>
+                            <h3 class="stat-value" id="step-count">0</h3>
+                            <span class="stat-unit">steps</span>
+                        </div>
+                        <div class="stat-box">
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <button class="icon-btn"><i class="fa-solid fa-bell"></i></button>
+                            </div>
+                            <p class="stat-label"><i class="fa-solid fa-bolt" style="color:#3b82f6;"></i> Jumps</p>
+                            <h3 class="stat-value" id="jump-count">0</h3>
+                            <span class="stat-unit">times</span>
+                        </div>
+                    </div>
+
+                    <!-- Weekly Challenge -->
+                    <div class="card" style="margin-top: 24px;">
+                        <div class="flex-between">
+                            <div>
+                                <p class="subtitle">Weekly Challenge</p>
+                                <h3 class="card-title">Run 25 km</h3>
+                            </div>
+                            <div class="icon-box icon-green"><i class="fa-solid fa-person-running"></i></div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar bg-green" style="width: 72%;"></div>
+                        </div>
+                        <div class="flex-between" style="font-size: 14px; margin-top: 12px;">
+                            <span class="text-muted">18 km completed</span>
+                            <span class="text-green">72%</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================== -->
+                <!-- 📈 WORKOUT VIEW -->
+                <!-- ============================== -->
+                <section id="view-workout" class="view-section hidden">
+                    <!-- Modes -->
+                    <div class="section-title">Select Mode</div>
+                    <div class="workout-modes">
+                        <button class="mode-btn active" data-mode="running"><i class="fa-solid fa-person-running"></i>
+                            Running</button>
+                        <button class="mode-btn" data-mode="cycling"><i class="fa-solid fa-person-biking"></i>
+                            Cycling</button>
+                        <button class="mode-btn" data-mode="swimming"><i class="fa-solid fa-person-swimming"></i>
+                            Swimming</button>
+                        <button class="mode-btn" data-mode="lifting"><i class="fa-solid fa-dumbbell"></i>
+                            Weights</button>
+                    </div>
+
+                    <!-- Live Map Card -->
+                    <div class="card map-card">
+                        <div class="card-header">
+                            <div>
+                                <p class="subtitle">GPS Live Navigator</p>
+                                <h3 class="card-title">Track your route</h3>
+                            </div>
+                            <button id="share-location-btn" class="icon-btn"><i
+                                    class="fa-solid fa-location-crosshairs"></i></button>
+                        </div>
+                        <div id="map-container" class="map-view"></div>
+                        <div id="share-status" class="share-status hidden">
+                            <span class="pulse-dot"></span> Sharing live location...
+                        </div>
+                    </div>
+
+                    <!-- Live Metrics Dashboard (Apple Fitness Style) -->
+                    <div class="metrics-dashboard card" style="margin-top: 24px; text-align: center;">
+                        <h2 class="text-green font-bold" style="font-size: 32px; letter-spacing: 2px;"
+                            id="workout-timer">00:00:00</h2>
+                        <p class="text-muted" style="margin-bottom: 16px;">Elapsed Time</p>
+
+                        <div class="flex-between" style="align-items: flex-start;">
+                            <div style="flex: 1;">
+                                <h3 class="card-title text-blue" style="font-size: 24px;" id="workout-distance">0.00
+                                </h3>
+                                <p class="text-muted" style="font-size: 12px;">Distance (km)</p>
+                            </div>
+                            <div style="width: 1px; height: 40px; background: var(--border-color);"></div>
+                            <div style="flex: 1;">
+                                <h3 class="card-title text-orange" style="font-size: 24px;" id="workout-calories">0</h3>
+                                <p class="text-muted" style="font-size: 12px;">Active kcal</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================== -->
+                <!-- ❤️ HEALTH VIEW -->
+                <!-- ============================== -->
+                <section id="view-health" class="view-section hidden">
+                    <!-- Heart Rate -->
+                    <div class="card" style="margin-top: 0;">
+                        <div class="flex-between">
+                            <div>
+                                <p class="subtitle">Heart Rate</p>
+                                <h3 class="card-title" id="hr-value">-- bpm</h3>
+                            </div>
+                            <button id="btn-connect-hr" class="icon-box icon-red"
+                                style="border: none; cursor:pointer; color: #ef4444;"><i
+                                    class="fa-solid fa-heart-pulse"></i></button>
+                        </div>
+                        <p class="text-muted" style="font-size:12px; margin-top:8px;" id="hr-status">Click <i
+                                class="fa-solid fa-heart-pulse" style="color: #ef4444;"></i> to connect Monitor</p>
+                        <!-- Floating Curves Animation -->
+                        <div class="hr-curves-container">
+                            <div class="curve curve-1"></div>
+                            <div class="curve curve-2"></div>
+                            <div class="curve curve-3"></div>
+                        </div>
+                    </div>
+
+                    <!-- Sleep Analysis -->
+                    <div class="card" style="margin-top: 16px;">
+                        <div class="flex-between">
+                            <div>
+                                <p class="subtitle">Sleep Analysis</p>
+                                <h3 class="card-title" id="sleep-duration">7h 24m</h3>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button id="btn-sync-sleep" class="icon-box icon-blue"
+                                    style="border:none; cursor:pointer; font-size: 18px; width: 40px; height: 40px;"><i
+                                        class="fa-solid fa-rotate"></i></button>
+                                <div class="icon-box icon-blue" style="width: 40px; height: 40px;"><i
+                                        class="fa-solid fa-moon"></i></div>
+                            </div>
+                        </div>
+                        <div class="sleep-bar">
+                            <div id="sleep-deep-bar" class="segment deep" style="width: 25%"></div>
+                            <div id="sleep-light-bar" class="segment light" style="width: 55%"></div>
+                            <div id="sleep-rem-bar" class="segment rem" style="width: 20%"></div>
+                        </div>
+                        <div class="flex-between" style="font-size:12px; margin-top:12px;">
+                            <span id="sleep-deep-text" style="color:#3b82f6">Deep: 25%</span>
+                            <span id="sleep-light-text" style="color:#60a5fa">Light: 55%</span>
+                            <span id="sleep-rem-text" style="color:#93c5fd">REM: 20%</span>
+                        </div>
+                    </div>
+
+                    <!-- Other Metrics -->
+                    <div class="stats-grid" style="padding: 16px 0 0;">
+                        <div class="stat-box">
+                            <p class="stat-label"><i class="fa-solid fa-droplet"
+                                    style="color: #ef4444; margin-right: 4px;"></i> Blood Ox</p>
+                            <h3 class="stat-value">98<span class="stat-unit">%</span></h3>
+                        </div>
+                        <div class="stat-box">
+                            <p class="stat-label"><i class="fa-solid fa-temperature-half"
+                                    style="color: #f97316; margin-right: 4px;"></i> Temp</p>
+                            <h3 class="stat-value" id="health-temp-value">36.5<span class="stat-unit">°C</span></h3>
+                        </div>
+                        <div class="stat-box">
+                            <p class="stat-label"><i class="fa-solid fa-wind"
+                                    style="color: #3b82f6; margin-right: 4px;"></i> Breath</p>
+                            <h3 class="stat-value">16<span class="stat-unit">/min</span></h3>
+                        </div>
+                    </div>
+
+                    <!-- Daily Reminders -->
+                    <div class="section-title">Daily Reminders</div>
+                    <div class="card" style="margin-top: 0;">
+                        <p class="subtitle">Stay on track</p>
+                        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
+                            <input type="text" id="reminder-note" placeholder="Add a reminder note..." 
+                                style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white; font-size: 14px;">
+                            <div style="display: flex; gap: 12px;">
+                                <input type="time" id="reminder-time" 
+                                    style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white; font-size: 14px; color-scheme: dark;">
+                                <button id="btn-add-reminder" class="btn-primary" style="width: auto; padding: 0 20px; border-radius: 12px;">Set</button>
+                            </div>
+                        </div>
+                        
+                        <div id="reminder-list" style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                            <p class="text-muted" style="font-size: 12px; text-align: center; padding: 10px;">No reminders set for today.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================== -->
+                <!-- ⚙️ PROFILE VIEW -->
+                <!-- ============================== -->
+                <section id="view-profile" class="view-section hidden">
+                    <div class="card" style="margin-top: 0; text-align: center;">
+                        <div class="profile-avatar-container"
+                            style="position: relative; width: 80px; height: 80px; margin: 0 auto 16px;">
+                            <div class="avatar user-initial" style="width:100%; height:100%; font-size:28px;">U</div>
+                            <button id="btn-upload-profile" class="upload-badge"><i
+                                    class="fa-solid fa-camera"></i></button>
+                            <input type="file" id="input-profile-img" accept="image/*" style="display: none;">
+                        </div>
+                        <h2 id="user-name-profile" style="font-size: 20px;">User</h2>
+                        <p id="user-email-profile" class="text-muted" style="font-size: 13px; margin-top: 4px;">user@email.com</p>
+                        <p class="text-muted" style="margin-top: 4px; margin-bottom: 20px;">Pro Member</p>
+                        
+                        <button id="btn-toggle-edit" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white; font-weight: 600; cursor: pointer; font-size: 14px;">
+                            Edit Profile
+                        </button>
+                    </div>
+
+                    <!-- Edit Profile Section (Hidden by default) -->
+                    <div id="edit-profile-section" class="hidden">
+                        <div class="section-title">Edit Profile</div>
+                        <div class="card" style="margin-top: 0;">
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div style="text-align: left;">
+                                    <label style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px; display: block;">Display Name</label>
+                                    <input type="text" id="edit-profile-name" placeholder="Your Name"
+                                        style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white; font-size: 15px;">
+                                </div>
+                                <div style="text-align: left;">
+                                    <label style="font-size: 12px; color: var(--text-muted); margin-bottom: 6px; display: block;">Email Address</label>
+                                    <input type="email" id="edit-profile-email" placeholder="your@email.com"
+                                        style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white; font-size: 15px;">
+                                </div>
+                                <div style="display: flex; gap: 12px; margin-top: 4px;">
+                                    <button id="btn-cancel-edit" style="flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: white; font-weight: 600; cursor: pointer;">Cancel</button>
+                                    <button id="btn-save-profile" class="btn-primary" style="flex: 2;">Save Changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Actions -->
+                    <div class="section-title">Account</div>
+                    <div class="card" style="margin-top: 0;">
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <button id="btn-logout"
+                                style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--accent-blue); background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); font-weight: 600; cursor: pointer;">
+                                <i class="fa-solid fa-right-from-bracket" style="margin-right: 8px;"></i> Logout /
+                                Switch User
+                            </button>
+                            <button id="btn-reset-permissions"
+                                style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--accent-green); background: rgba(34, 197, 94, 0.1); color: var(--accent-green); font-weight: 600; cursor: pointer;">
+                                <i class="fa-solid fa-shield-halved" style="margin-right: 8px;"></i> Reset Permissions
+                            </button>
+                            <button id="btn-reset-app"
+                                style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.1); color: #ef4444; font-weight: 600; cursor: pointer;">
+                                <i class="fa-solid fa-trash-can" style="margin-right: 8px;"></i> Reset All Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="section-title">AI Coaching Insights</div>
+                    <div class="card" style="background: rgba(34, 197, 94, 0.1); border-color: rgba(34,197,94,0.3);">
+                        <p style="font-size: 14px; line-height: 1.5; color: var(--text-white);">
+                            "You are crushing your step goals this week! Consider adding a short 15-minute strength
+                            training session today to balance your cardio."
+                        </p>
+                    </div>
+
+                    <div class="section-title">Friend Leaderboard</div>
+                    <div class="schedule-list">
+                        <div class="schedule-item">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="avatar" style="width:32px; height:32px; font-size:12px;">A</div>
+                                <div>
+                                    <h4 class="item-title">Alex</h4>
+                                </div>
+                            </div>
+                            <div class="text-green font-bold">18,400</div>
+                        </div>
+                        <div class="schedule-item" style="border-color: var(--accent-green);">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="avatar user-initial" style="width:32px; height:32px; font-size:12px;">U
+                                </div>
+                                <div>
+                                    <h4 class="item-title" id="leaderboard-user-name">User (You)</h4>
+                                </div>
+                            </div>
+                            <div class="text-green font-bold" id="leaderboard-steps">14,220</div>
+                        </div>
+                        <div class="schedule-item">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="avatar"
+                                    style="width:32px; height:32px; font-size:12px; background:linear-gradient(to bottom right, #f97316, #c2410c);">
+                                    S</div>
+                                <div>
+                                    <h4 class="item-title">Sarah</h4>
+                                </div>
+                            </div>
+                            <div class="text-green font-bold">9,100</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================== -->
+                <!-- 👥 SOCIAL VIEW -->
+                <!-- ============================== -->
+                <section id="view-social" class="view-section hidden">
+                    <div class="section-title">Friends & Community</div>
+
+                    <!-- Invite Card -->
+                    <div class="card" style="margin-top: 0;">
+                        <p class="subtitle">Expand your circle</p>
+                        <h3 class="card-title" style="margin-bottom: 12px;">Invite Friends</h3>
+                        <div style="display:flex; gap:10px;">
+                            <input type="text" id="invite-email" placeholder="Enter ID or Email"
+                                style="flex:1; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; color:white;">
+                            <button id="btn-send-invite" class="btn-primary"
+                                style="width: auto; padding: 0 16px; border-radius: 12px;"><i
+                                    class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="section-title">Friend Requests</div>
+                    <div id="friend-requests-list" style="padding: 0 20px; margin-bottom: 20px;">
+                        <!-- Requests will be injected here -->
+                        <p class="text-muted" style="font-size: 13px; text-align: center; padding: 10px;">No pending
+                            requests</p>
+                    </div>
+
+                    <div class="section-title">Active Friends</div>
+                    <div id="friend-list" style="padding: 0 20px;">
+                        <!-- Friends will be injected here -->
+                    </div>
+                </section>
+
+            </main>
+
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav">
+                <button class="nav-btn active" data-target="view-home">
+                    <i class="fa-solid fa-house"></i>
+                    <span class="nav-label">Home</span>
+                </button>
+                <button class="nav-btn" data-target="view-workout">
+                    <i class="fa-solid fa-chart-simple"></i>
+                    <span class="nav-label">Workout</span>
+                </button>
+                <button class="nav-btn" data-target="view-health">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                    <span class="nav-label">Health</span>
+                </button>
+                <button class="nav-btn" data-target="view-social">
+                    <i class="fa-solid fa-users"></i>
+                    <span class="nav-label">Social</span>
+                </button>
+                <button class="nav-btn" data-target="view-profile">
+                    <i class="fa-solid fa-user"></i>
+                    <span class="nav-label">Profile</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Active Chatbox (Disabled as requested) -->
+    <!-- 
+    <div id="fab-messages" class="fab-msg">
+        <i class="fa-solid fa-paper-plane"></i>
+    </div>
+    -->
+
+
+
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="overlay hidden">
+        <div class="overlay-card" style="text-align: center;">
+            <img src="img/logo.png" alt="PulseTrack Logo" 
+                style="width: 120px; height: 120px; margin: 0 auto 20px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <h2 id="login-title" style="margin-bottom: 8px;">Welcome to PulseTrack</h2>
+            
+            <!-- Auth Tabs -->
+            <div style="display: flex; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; margin-bottom: 24px; border: 1px solid var(--border-color);">
+                <button id="tab-login" class="auth-tab active" style="flex: 1; padding: 8px; border: none; border-radius: 8px; background: transparent; color: white; cursor: pointer; transition: all 0.3s; font-size: 14px; font-weight: 600;">Login</button>
+                <button id="tab-register" class="auth-tab" style="flex: 1; padding: 8px; border: none; border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.3s; font-size: 14px; font-weight: 600;">Register</button>
+            </div>
+            
+            <p id="login-subtitle" class="text-muted" style="margin-bottom: 24px;">Login to access your fitness data.</p>
+            
+            <div id="login-form" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                <input type="email" id="user-email-input" placeholder="Email Address"
+                    style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white; text-align: center; font-size: 16px;">
+                
+                <input type="password" id="user-pin-input" placeholder="Enter PIN (Password)"
+                    style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white; text-align: center; font-size: 16px; letter-spacing: 4px;">
+                
+                <input type="text" id="user-name-input" placeholder="Your Full Name"
+                    style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.05); color: white; text-align: center; font-size: 16px; display: none;">
+            </div>
+
+            <button id="login-submit-btn" class="btn-primary">Continue</button>
+            
+            <p id="login-helper" class="text-muted" style="margin-top: 16px; font-size: 13px;">
+                New user? Click the <strong>Register</strong> tab above.
+            </p>
+
+            <!-- Developer Info -->
+            <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 12px;">
+                <p class="text-muted">Developed by <span style="color: var(--accent-green); font-weight: 600;">Mahesss</span></p>
+                <a href="mailto:mahesft16@gmail.com" style="color: var(--accent-blue); text-decoration: none; margin-top: 4px; display: inline-block;">
+                    <i class="fa-solid fa-envelope" style="margin-right: 4px;"></i> mahesft16@gmail.com
+                </a>
+            </div>
+        </div>
+    </div>
+    <!-- Permissions Overlay -->
+    <div id="permissions-overlay" class="overlay hidden">
+        <div class="overlay-card" style="max-width: 340px;">
+            <div class="icon-box icon-blue" style="margin: 0 auto 20px; width: 64px; height: 64px; font-size: 32px;">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h2 style="margin-bottom: 12px;">Permissions Required</h2>
+            <p class="text-muted" style="margin-bottom: 24px;">PulseTrack needs access to the following to provide accurate tracking and weather data.</p>
+            
+            <div style="text-align: left; display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div class="icon-box icon-green" style="width: 40px; height: 40px; font-size: 18px;"><i class="fa-solid fa-person-running"></i></div>
+                    <div>
+                        <h4 style="font-size: 14px;">Motion Access</h4>
+                        <p style="font-size: 11px; margin: 0; color: #888;">To track your steps and calories.</p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div class="icon-box icon-green" style="width: 40px; height: 40px; font-size: 18px;"><i class="fa-solid fa-location-dot"></i></div>
+                    <div>
+                        <h4 style="font-size: 14px;">Location Access</h4>
+                        <p style="font-size: 11px; margin: 0; color: #888;">For GPS tracking and local weather.</p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div class="icon-box icon-blue" style="width: 40px; height: 40px; font-size: 18px;"><i class="fa-solid fa-bluetooth"></i></div>
+                    <div>
+                        <h4 style="font-size: 14px;">Bluetooth Access</h4>
+                        <p style="font-size: 11px; margin: 0; color: #888;">To connect with gym equipment.</p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div class="icon-box icon-orange" style="width: 40px; height: 40px; font-size: 18px;"><i class="fa-solid fa-cloud-sun"></i></div>
+                    <div>
+                        <h4 style="font-size: 14px;">Weather Data</h4>
+                        <p style="font-size: 11px; margin: 0; color: #888;">Sync with system weather app.</p>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btn-grant-permissions" class="btn-primary">Grant All Permissions</button>
+        </div>
+    </div>
+
+    <!-- Chat Overlay (Instagram Direct Style) -->
+    <div id="chat-overlay" class="chat-overlay">
+        <div class="chat-header">
+            <button id="btn-close-chat" class="back-btn"><i class="fa-solid fa-arrow-left"></i></button>
+            <div id="chat-friend-avatar" class="avatar" style="width:32px; height:32px; font-size:12px;">?</div>
+            <div style="flex: 1;">
+                <h3 id="chat-friend-name" style="font-size:15px; font-weight: 600;">Friend Name</h3>
+                <p id="chat-friend-status" style="font-size:11px; color: #8e8e8e; margin-top: 1px;">Active now</p>
+            </div>
+            <div style="display:flex; gap: 20px;">
+                <i class="fa-solid fa-phone ig-icon"></i>
+                <i class="fa-solid fa-video ig-icon"></i>
+            </div>
+        </div>
+
+        <div id="chat-messages" class="chat-messages">
+            <!-- Messages injected here -->
+        </div>
+
+        <div class="chat-input-area">
+            <div id="btn-chat-camera" class="ig-icon"
+                style="background: var(--accent-blue); width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                <i class="fa-solid fa-camera" style="font-size:14px;"></i></div>
+            <div class="ig-input-wrapper">
+                <input type="text" id="chat-input" class="chat-input" placeholder="Message...">
+                <div style="display:flex; gap: 12px; margin-left: 8px;">
+                    <i id="btn-chat-mic" class="fa-solid fa-microphone ig-icon"></i>
+                    <i id="btn-chat-img" class="fa-solid fa-image ig-icon"></i>
+                    <i id="btn-chat-emoji" class="fa-solid fa-face-smile ig-icon"></i>
+                </div>
+            </div>
+            <input type="file" id="input-chat-img" accept="image/*" style="display: none;">
+            <button id="btn-send-msg"
+                style="background:none; border:none; color:var(--accent-blue); font-weight:600; font-size:15px; cursor:pointer; display:none;">Send</button>
+        </div>
+    </div>
+
+    <!-- Call Overlay Disabled -->
+
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- App Scripts -->
+    <script src="js/auth.js"></script>
+    <script src="js/sleep.js"></script>
+    <script src="js/social.js"></script>
+    <script src="js/sensors.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/heartrate.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/weather.js"></script>
+    <script src="js/reminders.js"></script>
+</body>
+
+</html>
